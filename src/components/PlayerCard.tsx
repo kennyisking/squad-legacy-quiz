@@ -41,46 +41,44 @@ export default function PlayerCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <div className="relative overflow-hidden rounded-xl">
+      <div className="relative p-4 flex flex-col justify-between h-full">
         <div className={`absolute top-2 left-2 text-xs font-bold px-2 py-1 rounded-full text-white ${positionColors[player.position]}`}>
           {player.position}
         </div>
         
-        <div className="p-4 flex flex-col justify-between h-full">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center space-x-2">
-              <span className="text-xs font-semibold px-2 py-1 rounded-full bg-muted">
-                {player.team}
-              </span>
-            </div>
-            <span className="text-xs font-medium">
-              £{player.price}m
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center space-x-2">
+            <span className="text-xs font-semibold px-2 py-1 rounded-full bg-muted">
+              {player.team}
             </span>
           </div>
-          
-          <h3 className="text-lg font-semibold mb-1">{player.name}</h3>
-          
-          <div className="flex justify-between items-center mt-4">
-            <div className="flex items-center space-x-1">
-              <span className="text-sm font-medium">FPL Points:</span>
-              {showPoints ? (
-                <span className="text-sm font-bold">{player.points}</span>
-              ) : (
-                <span className="text-sm font-bold">???</span>
-              )}
-            </div>
-            
-            <button
-              onClick={handleClick}
-              className={`rounded-full px-3 py-1 text-sm font-medium transition-colors ${
-                isDrafted 
-                  ? "bg-red-100 text-red-600 hover:bg-red-200" 
-                  : "bg-primary text-white hover:bg-primary/90"
-              }`}
-            >
-              {isDrafted ? "Remove" : "Add"}
-            </button>
+          <span className="text-xs font-medium">
+            £{player.price}m
+          </span>
+        </div>
+        
+        <h3 className="text-lg font-semibold mb-1">{player.name}</h3>
+        
+        <div className="flex justify-between items-center mt-4">
+          <div className="flex items-center space-x-1">
+            <span className="text-sm font-medium">FPL Points:</span>
+            {showPoints ? (
+              <span className="text-sm font-bold">{player.points}</span>
+            ) : (
+              <span className="text-sm font-bold">???</span>
+            )}
           </div>
+          
+          <button
+            onClick={handleClick}
+            className={`rounded-full px-3 py-1 text-sm font-medium transition-colors ${
+              isDrafted 
+                ? "bg-red-100 text-red-600 hover:bg-red-200" 
+                : "bg-primary text-white hover:bg-primary/90"
+            }`}
+          >
+            {isDrafted ? "Remove" : "Add"}
+          </button>
         </div>
       </div>
     </motion.div>

@@ -20,9 +20,14 @@ export default function PlayerCard({
     // Prevent event propagation
     e.stopPropagation();
     
+    console.log("Button clicked for player:", player.name);
+    console.log("Is drafted:", isDrafted);
+    
     if (isDrafted) {
+      console.log("Removing player:", player.id);
       removePlayer(player.id);
     } else {
+      console.log("Drafting player:", player.id);
       draftPlayer(player);
     }
   };

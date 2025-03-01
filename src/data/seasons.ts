@@ -3,6 +3,13 @@ import { Season } from "../types/game";
 
 export const seasons: Season[] = [
   {
+    id: "2019-20",
+    name: "The Test Data",
+    year: "2019-20",
+    description: "Time for a test!",
+    image: "/seasons/2019-20.jpg"
+  },
+  {
     id: "2018-19",
     name: "The Centurions Era",
     year: "2018-19",

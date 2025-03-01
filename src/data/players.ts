@@ -4,11 +4,11 @@ import { Player } from "../types/game";
 // Mock data, in a real app this would be a comprehensive database of players from each season
 export const players: Record<string, Player[]> = {
   "2018-19": [
-    { id: "p1-1819", name: "Alisson", position: "GK", team: "Liverpool", season: "2018-19", points: 176, price: 5.5 },
+    { id: "p1-1819", name: "Alisson", position: "GK", team: "Liverpool", season: "2018-19", points: 176, price: 4.5 },
     { id: "p2-1819", name: "Ederson", position: "GK", team: "Man City", season: "2018-19", points: 169, price: 5.5 },
     { id: "p3-1819", name: "Fabianski", position: "GK", team: "West Ham", season: "2018-19", points: 143, price: 4.5 },
     
-    { id: "p4-1819", name: "Robertson", position: "DEF", team: "Liverpool", season: "2018-19", points: 213, price: 6.5 },
+    { id: "p4-1819", name: "Robertson", position: "DEF", team: "Liverpool", season: "2018-19", points: 213, price: 4.5 },
     { id: "p5-1819", name: "van Dijk", position: "DEF", team: "Liverpool", season: "2018-19", points: 208, price: 6.5 },
     { id: "p6-1819", name: "Alexander-Arnold", position: "DEF", team: "Liverpool", season: "2018-19", points: 185, price: 6.0 },
     { id: "p7-1819", name: "Laporte", position: "DEF", team: "Man City", season: "2018-19", points: 177, price: 6.0 },
@@ -16,7 +16,7 @@ export const players: Record<string, Player[]> = {
     { id: "p9-1819", name: "Digne", position: "DEF", team: "Everton", season: "2018-19", points: 158, price: 5.5 },
     { id: "p10-1819", name: "Wan-Bissaka", position: "DEF", team: "Crystal Palace", season: "2018-19", points: 120, price: 4.5 },
     
-    { id: "p11-1819", name: "Sterling", position: "MID", team: "Man City", season: "2018-19", points: 234, price: 11.0 },
+    { id: "p11-1819", name: "Sterling", position: "MID", team: "Man City", season: "2018-19", points: 234, price: 5.0 },
     { id: "p12-1819", name: "Salah", position: "MID", team: "Liverpool", season: "2018-19", points: 259, price: 13.0 },
     { id: "p13-1819", name: "Hazard", position: "MID", team: "Chelsea", season: "2018-19", points: 238, price: 11.0 },
     { id: "p14-1819", name: "Mané", position: "MID", team: "Liverpool", season: "2018-19", points: 231, price: 10.5 },
@@ -25,7 +25,7 @@ export const players: Record<string, Player[]> = {
     { id: "p17-1819", name: "Sigurdsson", position: "MID", team: "Everton", season: "2018-19", points: 182, price: 8.0 },
     { id: "p18-1819", name: "Eriksen", position: "MID", team: "Tottenham", season: "2018-19", points: 173, price: 9.0 },
     
-    { id: "p19-1819", name: "Agüero", position: "FWD", team: "Man City", season: "2018-19", points: 201, price: 12.0 },
+    { id: "p19-1819", name: "Agüero", position: "FWD", team: "Man City", season: "2018-19", points: 201, price: 7.0 },
     { id: "p20-1819", name: "Aubameyang", position: "FWD", team: "Arsenal", season: "2018-19", points: 205, price: 11.0 },
     { id: "p21-1819", name: "Jiménez", position: "FWD", team: "Wolves", season: "2018-19", points: 181, price: 7.0 },
     { id: "p22-1819", name: "Vardy", position: "FWD", team: "Leicester", season: "2018-19", points: 174, price: 9.0 },

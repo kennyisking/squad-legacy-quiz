@@ -5,6 +5,22 @@ import { Player, Season, Squad, GameState } from '../types/game';
 import { seasons } from '../data/seasons';
 import { players } from '../data/players';
 
+// Helper function to shuffle an array (Fisher-Yates shuffle)
+const shuffle = (array) => {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+};
+
+// Helper function to get `count` random players from an array
+const getRandomPlayers = (players, count) => {
+  const shuffled = shuffle(players);
+  return shuffled.slice(0, Math.min(count, players.length));
+};
+
 interface GameStore extends GameState {
   selectSeason: (season: Season) => void;
   startDraft: () => void;
@@ -20,184 +36,149 @@ interface GameStore extends GameState {
 
 const INITIAL_BUDGET = 100.0;
 
-export const useGameStore = create<GameStore>()(
+export const useGameStore = create(
   devtools(
     persist(
       (set, get) => ({
         selectedSeason: null,
         draftedPlayers: [],
-        availablePlayers: [],
         draftComplete: false,
-        budget: INITIAL_BUDGET,
         currentView: 'seasons',
         showPoints: false,
-        
+        // New state for sequential draft
+        draftSequence: [], // e.g., ['GK', 'DEF', 'MID', ...]
+        currentDraftIndex: 0, // Tracks current step (0 to 14)
+        availablePlayersByPosition: {}, // { GK: [], DEF: [], MID: [], FWD: [] }
+        currentOptions: [], // 5 players to choose from at each step
+
+        // Select a season and initialize the draft
         selectSeason: (season) => {
+          const allPlayers = players[season.id] || [];
+
+          // Group players by position
+          const availablePlayersByPosition = {
+            GK: allPlayers.filter((p) => p.position === 'GK'),
+            DEF: allPlayers.filter((p) => p.position === 'DEF'),
+            MID: allPlayers.filter((p) => p.position === 'MID'),
+            FWD: allPlayers.filter((p) => p.position === 'FWD'),
+          };
+
+          // Generate random draft sequence
+          const positions = [
+            'GK', 'GK',
+            'DEF', 'DEF', 'DEF', 'DEF', 'DEF',
+            'MID', 'MID', 'MID', 'MID', 'MID',
+            'FWD', 'FWD', 'FWD',
+          ];
+          const draftSequence = shuffle(positions);
+
+          // Set initial options (5 random players for the first position)
+          const firstPosition = draftSequence[0];
+          const initialOptions = getRandomPlayers(availablePlayersByPosition[firstPosition], 5);
+
           set({
             selectedSeason: season,
-            availablePlayers: players[season.id] || [],
-            currentView: 'draft',
+            availablePlayersByPosition,
+            draftSequence,
+            currentDraftIndex: 0,
+            currentOptions: initialOptions,
             draftedPlayers: [],
-            budget: INITIAL_BUDGET,
             draftComplete: false,
-            showPoints: false
+            currentView: 'draft',
+            showPoints: false,
           });
         },
-        
-        startDraft: () => {
-          const { selectedSeason } = get();
-          if (selectedSeason) {
+
+        // Select a player from the current options
+        selectPlayerFromOptions: (player) => {
+          const {
+            draftedPlayers,
+            availablePlayersByPosition,
+            draftSequence,
+            currentDraftIndex,
+          } = get();
+
+          // Add selected player to drafted players
+          const newDrafted = [...draftedPlayers, player];
+
+          // Remove selected player from available pool
+          const position = player.position;
+          const newAvailable = availablePlayersByPosition[position].filter((p) => p.id !== player.id);
+          const newAvailableByPosition = {
+            ...availablePlayersByPosition,
+            [position]: newAvailable,
+          };
+
+          // Move to next step
+          const nextIndex = currentDraftIndex + 1;
+
+          if (nextIndex < 15) {
+            // Set next options
+            const nextPosition = draftSequence[nextIndex];
+            const nextAvailable = newAvailableByPosition[nextPosition];
+            const nextOptions = getRandomPlayers(nextAvailable, Math.min(5, nextAvailable.length));
+
             set({
-              availablePlayers: players[selectedSeason.id] || [],
-              currentView: 'draft',
-              draftedPlayers: [],
-              budget: INITIAL_BUDGET,
-              draftComplete: false,
-              showPoints: false
+              draftedPlayers: newDrafted,
+              availablePlayersByPosition: newAvailableByPosition,
+              currentDraftIndex: nextIndex,
+              currentOptions: nextOptions,
+            });
+          } else {
+            // Draft is complete
+            const totalPoints = newDrafted.reduce((sum, p) => sum + p.points, 0);
+            const totalPrice = newDrafted.reduce((sum, p) => sum + p.price, 0);
+            set({
+              draftedPlayers: newDrafted,
+              availablePlayersByPosition: newAvailableByPosition,
+              draftComplete: true,
+              currentView: 'results',
+              showPoints: true,
             });
           }
         },
-        
-        draftPlayer: (player) => {
-          const { draftedPlayers, budget, availablePlayers } = get();
-          
-          // Check position limits
-          const gkCount = draftedPlayers.filter(p => p.position === 'GK').length;
-          const defCount = draftedPlayers.filter(p => p.position === 'DEF').length;
-          const midCount = draftedPlayers.filter(p => p.position === 'MID').length;
-          const fwdCount = draftedPlayers.filter(p => p.position === 'FWD').length;
-          
-          if (draftedPlayers.length >= 15) {
-            console.log("Squad full");
-            return;
-          }
-          
-          if (player.position === 'GK' && gkCount >= 2) {
-            console.log("Max goalkeepers reached");
-            return;
-          }
-          
-          if (player.position === 'DEF' && defCount >= 5) {
-            console.log("Max defenders reached");
-            return;
-          }
-          
-          if (player.position === 'MID' && midCount >= 5) {
-            console.log("Max midfielders reached");
-            return;
-          }
-          
-          if (player.position === 'FWD' && fwdCount >= 3) {
-            console.log("Max forwards reached");
-            return;
-          }
-          
-          if (budget - player.price < 0) {
-            console.log("Not enough budget");
-            return;
-          }
-          
-          // Add player to squad
-          set({
-            draftedPlayers: [...draftedPlayers, player],
-            budget: +(budget - player.price).toFixed(1),
-            availablePlayers: availablePlayers.filter(p => p.id !== player.id)
-          });
-        },
-        
-        removePlayer: (playerId) => {
-          const { draftedPlayers, budget, availablePlayers } = get();
-          const player = draftedPlayers.find(p => p.id === playerId);
-          
-          if (player) {
-            set({
-              draftedPlayers: draftedPlayers.filter(p => p.id !== playerId),
-              budget: +(budget + player.price).toFixed(1),
-              availablePlayers: [...availablePlayers, player].sort((a, b) => a.name.localeCompare(b.name))
-            });
-          }
-        },
-        
-        completeDraft: () => {
-          const { draftedPlayers } = get();
-          
-          // Check if we have a valid squad (15 players with positional requirements)
-          const gkCount = draftedPlayers.filter(p => p.position === 'GK').length;
-          const defCount = draftedPlayers.filter(p => p.position === 'DEF').length;
-          const midCount = draftedPlayers.filter(p => p.position === 'MID').length;
-          const fwdCount = draftedPlayers.filter(p => p.position === 'FWD').length;
-          
-          if (draftedPlayers.length !== 15 || gkCount < 2 || defCount < 5 || midCount < 5 || fwdCount < 3) {
-            console.log("Invalid squad composition");
-            return;
-          }
-          
-          // Calculate total points
-          const totalPoints = draftedPlayers.reduce((sum, player) => sum + player.points, 0);
-          
-          set({
-            draftComplete: true,
-            currentView: 'results',
-            showPoints: true
-          });
-        },
-        
+
+        // Reset the draft
         resetDraft: () => {
           const { selectedSeason } = get();
           if (selectedSeason) {
+            const allPlayers = players[selectedSeason.id] || [];
+            const availablePlayersByPosition = {
+              GK: allPlayers.filter((p) => p.position === 'GK'),
+              DEF: allPlayers.filter((p) => p.position === 'DEF'),
+              MID: allPlayers.filter((p) => p.position === 'MID'),
+              FWD: allPlayers.filter((p) => p.position === 'FWD'),
+            };
+            const positions = [
+              'GK', 'GK',
+              'DEF', 'DEF', 'DEF', 'DEF', 'DEF',
+              'MID', 'MID', 'MID', 'MID', 'MID',
+              'FWD', 'FWD', 'FWD',
+            ];
+            const draftSequence = shuffle(positions);
+            const firstPosition = draftSequence[0];
+            const initialOptions = getRandomPlayers(availablePlayersByPosition[firstPosition], 5);
+
             set({
-              availablePlayers: players[selectedSeason.id] || [],
+              availablePlayersByPosition,
+              draftSequence,
+              currentDraftIndex: 0,
+              currentOptions: initialOptions,
               draftedPlayers: [],
-              budget: INITIAL_BUDGET,
               draftComplete: false,
               currentView: 'draft',
-              showPoints: false
+              showPoints: false,
             });
           }
         },
-        
-        setView: (view) => {
-          set({ currentView: view });
-        },
-        
-        setShowPoints: (show) => {
-          set({ showPoints: show });
-        },
-        
-        saveSquad: (name) => {
-          const { draftedPlayers, selectedSeason } = get();
-          if (!selectedSeason) return;
-          
-          const totalPoints = draftedPlayers.reduce((sum, player) => sum + player.points, 0);
-          
-          const squad: Squad = {
-            id: `squad-${Date.now()}`,
-            name,
-            season: selectedSeason.id,
-            players: [...draftedPlayers],
-            totalPoints,
-            created: new Date()
-          };
-          
-          // Get existing saved squads
-          const savedSquads = localStorage.getItem('saved-squads');
-          let squads: Squad[] = savedSquads ? JSON.parse(savedSquads) : [];
-          
-          // Add new squad
-          squads.push(squad);
-          
-          // Save to localStorage
-          localStorage.setItem('saved-squads', JSON.stringify(squads));
-        },
-        
-        getSavedSquads: () => {
-          const savedSquads = localStorage.getItem('saved-squads');
-          return savedSquads ? JSON.parse(savedSquads) : [];
-        }
+
+        // Set the current view
+        setView: (view) => set({ currentView: view }),
+
+        // Toggle points visibility
+        setShowPoints: (show) => set({ showPoints: show }),
       }),
-      {
-        name: 'legacy-squad-storage'
-      }
+      { name: 'legacy-squad-storage' }
     )
   )
 );

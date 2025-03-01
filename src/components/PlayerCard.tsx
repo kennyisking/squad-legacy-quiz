@@ -79,6 +79,7 @@ export default function PlayerCard({
           
           <button
             onClick={handleClick}
+            style={{ position: "relative", zIndex: 10 }}
             className={`rounded-full px-3 py-1 text-sm font-medium transition-colors ${
               isDrafted 
                 ? "bg-red-100 text-red-600 hover:bg-red-200" 

@@ -16,7 +16,10 @@ export default function PlayerCard({
 }: PlayerCardProps) {
   const { draftPlayer, removePlayer } = useGameStore();
   
-  const handleClick = () => {
+  const handleClick = (e: React.MouseEvent) => {
+    // Prevent event propagation
+    e.stopPropagation();
+    
     if (isDrafted) {
       removePlayer(player.id);
     } else {
@@ -76,6 +79,7 @@ export default function PlayerCard({
                 ? "bg-red-100 text-red-600 hover:bg-red-200" 
                 : "bg-primary text-white hover:bg-primary/90"
             }`}
+            type="button"
           >
             {isDrafted ? "Remove" : "Add"}
           </button>

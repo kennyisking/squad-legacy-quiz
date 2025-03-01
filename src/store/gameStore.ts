@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 import { Player, Season, Squad, GameState } from '../types/game';
@@ -14,6 +15,7 @@ interface GameStore extends GameState {
   setView: (view: 'seasons' | 'draft' | 'results') => void;
   saveSquad: (name: string) => void;
   getSavedSquads: () => Squad[];
+  setShowPoints: (show: boolean) => void;
 }
 
 const INITIAL_BUDGET = 100.0;
@@ -28,6 +30,7 @@ export const useGameStore = create<GameStore>()(
         draftComplete: false,
         budget: INITIAL_BUDGET,
         currentView: 'seasons',
+        showPoints: false,
         
         selectSeason: (season) => {
           set({
@@ -36,7 +39,8 @@ export const useGameStore = create<GameStore>()(
             currentView: 'draft',
             draftedPlayers: [],
             budget: INITIAL_BUDGET,
-            draftComplete: false
+            draftComplete: false,
+            showPoints: false
           });
         },
         
@@ -48,7 +52,8 @@ export const useGameStore = create<GameStore>()(
               currentView: 'draft',
               draftedPlayers: [],
               budget: INITIAL_BUDGET,
-              draftComplete: false
+              draftComplete: false,
+              showPoints: false
             });
           }
         },
@@ -63,39 +68,39 @@ export const useGameStore = create<GameStore>()(
           const fwdCount = draftedPlayers.filter(p => p.position === 'FWD').length;
           
           if (draftedPlayers.length >= 15) {
-            // Toast notification: Squad full
+            console.log("Squad full");
             return;
           }
           
           if (player.position === 'GK' && gkCount >= 2) {
-            // Toast notification: Max goalkeepers reached
+            console.log("Max goalkeepers reached");
             return;
           }
           
           if (player.position === 'DEF' && defCount >= 5) {
-            // Toast notification: Max defenders reached
+            console.log("Max defenders reached");
             return;
           }
           
           if (player.position === 'MID' && midCount >= 5) {
-            // Toast notification: Max midfielders reached
+            console.log("Max midfielders reached");
             return;
           }
           
           if (player.position === 'FWD' && fwdCount >= 3) {
-            // Toast notification: Max forwards reached
+            console.log("Max forwards reached");
             return;
           }
           
           if (budget - player.price < 0) {
-            // Toast notification: Not enough budget
+            console.log("Not enough budget");
             return;
           }
           
           // Add player to squad
           set({
             draftedPlayers: [...draftedPlayers, player],
-            budget: budget - player.price,
+            budget: +(budget - player.price).toFixed(1),
             availablePlayers: availablePlayers.filter(p => p.id !== player.id)
           });
         },
@@ -107,8 +112,8 @@ export const useGameStore = create<GameStore>()(
           if (player) {
             set({
               draftedPlayers: draftedPlayers.filter(p => p.id !== playerId),
-              budget: budget + player.price,
-              availablePlayers: [...availablePlayers, player]
+              budget: +(budget + player.price).toFixed(1),
+              availablePlayers: [...availablePlayers, player].sort((a, b) => a.name.localeCompare(b.name))
             });
           }
         },
@@ -123,7 +128,7 @@ export const useGameStore = create<GameStore>()(
           const fwdCount = draftedPlayers.filter(p => p.position === 'FWD').length;
           
           if (draftedPlayers.length !== 15 || gkCount < 2 || defCount < 5 || midCount < 5 || fwdCount < 3) {
-            // Toast notification: Invalid squad composition
+            console.log("Invalid squad composition");
             return;
           }
           
@@ -133,6 +138,7 @@ export const useGameStore = create<GameStore>()(
           set({
             draftComplete: true,
             currentView: 'results',
+            showPoints: true
           });
         },
         
@@ -144,13 +150,18 @@ export const useGameStore = create<GameStore>()(
               draftedPlayers: [],
               budget: INITIAL_BUDGET,
               draftComplete: false,
-              currentView: 'draft'
+              currentView: 'draft',
+              showPoints: false
             });
           }
         },
         
         setView: (view) => {
           set({ currentView: view });
+        },
+        
+        setShowPoints: (show) => {
+          set({ showPoints: show });
         },
         
         saveSquad: (name) => {

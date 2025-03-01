@@ -36,4 +36,5 @@ export interface GameState {
   draftComplete: boolean;
   budget: number;
   currentView: 'seasons' | 'draft' | 'results';
+  showPoints: boolean;
 }

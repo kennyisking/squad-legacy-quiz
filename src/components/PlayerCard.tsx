@@ -6,9 +6,14 @@ import { useGameStore } from "../store/gameStore";
 interface PlayerCardProps {
   player: Player;
   isDrafted?: boolean;
+  showPoints?: boolean;
 }
 
-export default function PlayerCard({ player, isDrafted = false }: PlayerCardProps) {
+export default function PlayerCard({ 
+  player, 
+  isDrafted = false, 
+  showPoints = false 
+}: PlayerCardProps) {
   const { draftPlayer, removePlayer } = useGameStore();
   
   const handleClick = () => {
@@ -31,13 +36,13 @@ export default function PlayerCard({ player, isDrafted = false }: PlayerCardProp
   
   return (
     <motion.div 
-      className="player-card"
+      className="player-card bg-white border border-border rounded-xl shadow-sm hover:shadow-md transition-all"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
       <div className="relative overflow-hidden rounded-xl">
-        <div className={`position-badge ${player.position}`}>
+        <div className={`absolute top-2 left-2 text-xs font-bold px-2 py-1 rounded-full text-white ${positionColors[player.position]}`}>
           {player.position}
         </div>
         
@@ -58,12 +63,16 @@ export default function PlayerCard({ player, isDrafted = false }: PlayerCardProp
           <div className="flex justify-between items-center mt-4">
             <div className="flex items-center space-x-1">
               <span className="text-sm font-medium">FPL Points:</span>
-              <span className="text-sm font-bold">{player.points}</span>
+              {showPoints ? (
+                <span className="text-sm font-bold">{player.points}</span>
+              ) : (
+                <span className="text-sm font-bold">???</span>
+              )}
             </div>
             
             <button
               onClick={handleClick}
-              className={`rounded-full p-2 text-sm font-medium transition-colors ${
+              className={`rounded-full px-3 py-1 text-sm font-medium transition-colors ${
                 isDrafted 
                   ? "bg-red-100 text-red-600 hover:bg-red-200" 
                   : "bg-primary text-white hover:bg-primary/90"

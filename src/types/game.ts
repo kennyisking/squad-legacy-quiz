@@ -9,6 +9,17 @@ export interface Player {
   season: string;
   points: number;
   price: number;
+  nation: string;
+  age: number;
+  games: number;
+  goals:number;
+  assists:number;
+  pens:number;
+  yellows:number;
+  reds:number;
+  cleans:number;
+  xG:number;
+  xAG:number;
   image?: string;
 }
 
